@@ -100,15 +100,10 @@ class ChainCRF(Layer):
         return (input_shape[0], input_shape[1], input_shape[2])
 
     def compute_mask(self, input, mask=None):
-        if mask is not None:
-            return K.any(mask, axis=1)
-        return mask
+        return K.any(mask, axis=1) if mask is not None else mask
 
     def _fetch_mask(self):
-        mask = None
-        if self._inbound_nodes:
-            mask = self._inbound_nodes[0].input_masks[0]
-        return mask
+        return self._inbound_nodes[0].input_masks[0] if self._inbound_nodes else None
 
     def build(self, input_shape):
         assert len(input_shape) == 3
@@ -272,8 +267,7 @@ def viterbi_decode(x, U, b_start=None, b_end=None, mask=None):
                         initial_states,
                         U,
                         mask)
-    y = _backward(gamma, mask)
-    return y
+    return _backward(gamma, mask)
 
 
 def free_energy(x, U, b_start=None, b_end=None, mask=None):

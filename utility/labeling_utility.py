@@ -30,10 +30,20 @@ class LabelingData(object):
         self.load_data()
 
     def load_data(self):
-        words = list(set([elem for sublist in (self.X_train + self.X_test) for elem in sublist]))
+        words = list(
+            {elem for sublist in (self.X_train + self.X_test) for elem in sublist}
+        )
         self.vocab_size = len(words) + 2  # because of <UNK> and <PAD> pseudo words
-        self.n_classes = len(set([elem for sublist in (self.y_train + self.y_test) for elem in
-                                  sublist])) + 1  # add 1 because of zero padding
+        self.n_classes = (
+            len(
+                {
+                    elem
+                    for sublist in (self.y_train + self.y_test)
+                    for elem in sublist
+                }
+            )
+            + 1
+        )
 
         # assign a unique integer to each word/label
         self.w2idx = LabelingData.encode(self.X_train + self.X_test)
@@ -42,7 +52,7 @@ class LabelingData(object):
         # encode() maps each word to a unique index, starting from 1. We additionally incerement all the
         # values by 1, so that we can save space for 0 and 1 to be assigned to <PAD> and <UNK> later
         self.w2idx = Counter(self.w2idx)
-        self.w2idx.update(self.w2idx.keys())
+        self.w2idx |= self.w2idx.keys()
         self.w2idx = dict(
             self.w2idx)  # convert back to regular dict (to avoid erroneously assigning 0 to unknown words)
 
@@ -92,25 +102,22 @@ class LabelingData(object):
         UNKOWN = np.random.uniform(-1, 1, embedding_dimension)  # assumes that '<UNK>' does not exist in the embed vocab
 
         for word, i in self.w2idx.items():
-            if word in wvmodel.vocab:
-                embedding_matrix[i] = wvmodel[word]
-            else:
-                embedding_matrix[i] = UNKOWN
-
+            embedding_matrix[i] = wvmodel[word] if word in wvmodel.vocab else UNKOWN
         embedding_matrix[self.w2idx['<PAD>']] = np.zeros((embedding_dimension))
 
-        embedding_layer = Embedding(embedding_matrix.shape[0],
-                                    embedding_matrix.shape[1],
-                                    weights=[embedding_matrix],
-                                    trainable=trainable,
-                                    name='embed_layer')
-        return embedding_layer
+        return Embedding(
+            embedding_matrix.shape[0],
+            embedding_matrix.shape[1],
+            weights=[embedding_matrix],
+            trainable=trainable,
+            name='embed_layer',
+        )
 
 
     @staticmethod
     def tolower(file):
         lines=[l.lower() for l in FileUtility.load_list(file)]
-        FileUtility.save_list(file+'new',lines)
+        FileUtility.save_list(f'{file}new', lines)
 
 
     @staticmethod
@@ -142,7 +149,7 @@ class LabelingData(object):
     def convert_to_kmer(input_file, out_file, n=3):
         train = FileUtility.load_list(input_file)
         training_data = [line.split() for line in train]
-        final_list = list()
+        final_list = []
         temp = []
         for x in training_data:
             if x == []:
@@ -161,7 +168,7 @@ class LabelingData(object):
     def sequence_lengths(input_file):
         train = FileUtility.load_list(input_file)
         training_data = [line.split() for line in train]
-        final_list = list()
+        final_list = []
         temp = []
         for x in training_data:
             if x == []:
@@ -200,7 +207,7 @@ class LabelingData(object):
         label=['L', 'B', 'E', 'G', 'I', 'H', 'S', 'T']
         sequences=[]
         labels=[]
-        possible_features=dict()
+        possible_features = {}
         for i in range(0,db.shape[0]):
             sequences.append(''.join([seq[np.argmax(x)] if np.max(x)==1 else '' for x in db[i,:,0:21]]).lower())
             labels.append(''.join([label[np.argmax(y)] if np.max(y)==1 else '' for y in db[i,:,22:30]]).lower())
@@ -222,9 +229,7 @@ class LabelingData(object):
         EMB=np.load('/mounts/data/proj/asgari/dissertation/git_repos/DeepSeq2Sec/pretrained_embeddings/emb2features.npy')
         x_new=[]
         for i in range(0,X.shape[0]):
-            temp=[]
-            for j in range(0,700):
-                temp.append(X[i,j,0:21].dot(EMB).tolist()+X[i,j,:].tolist())
+            temp = [X[i,j,0:21].dot(EMB).tolist()+X[i,j,:].tolist() for j in range(0,700)]
             x_new.append(temp)
         return np.array(X_new)
 

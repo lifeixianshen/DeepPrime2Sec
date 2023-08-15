@@ -38,10 +38,15 @@ def multiscale_CNN(input_layer, gating_layer, filter_size, convs, kernel_regular
     :return:
     '''
     z_t = gating_layer(input_layer)
-    conclayers = []
-    for idx, conv in enumerate(convs):
-        conclayers.append(Conv1D(filter_size, conv, activation="relu", padding="same",
-                                 kernel_regularizer=regularizers.l2(kernel_regularizer))(input_layer))
+    conclayers = [
+        Conv1D(
+            filter_size,
+            conv,
+            activation="relu",
+            padding="same",
+            kernel_regularizer=regularizers.l2(kernel_regularizer),
+        )(input_layer)
+        for conv in convs
+    ]
     conc = concatenate(conclayers)
-    output = Lambda(lambda a: z_t * a[0] + (1 - z_t) * a[1])([input_layer, conc])
-    return output
+    return Lambda(lambda a: z_t * a[0] + (1 - z_t) * a[1])([input_layer, conc])

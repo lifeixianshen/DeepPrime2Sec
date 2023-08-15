@@ -29,11 +29,15 @@ class FileUtility(object):
         '''
         corpus = []
         if file_name_sample[-1] == 'q':
-            for cur_record in SeqIO.parse(file_name_sample, "fastq"):
-                corpus.append(str(cur_record.seq).lower())
+            corpus.extend(
+                str(cur_record.seq).lower()
+                for cur_record in SeqIO.parse(file_name_sample, "fastq")
+            )
         else:
-            for cur_record in SeqIO.parse(file_name_sample, "fasta"):
-                corpus.append(str(cur_record.seq).lower())
+            corpus.extend(
+                str(cur_record.seq).lower()
+                for cur_record in SeqIO.parse(file_name_sample, "fasta")
+            )
         return file_name_sample.split('/')[-1], corpus
 
     @staticmethod
@@ -44,11 +48,15 @@ class FileUtility(object):
         '''
         corpus = []
         if file_name_sample[-1] == 'q':
-            for cur_record in SeqIO.parse(file_name_sample, "fastq"):
-                corpus.append(str(cur_record.seq).lower())
+            corpus.extend(
+                str(cur_record.seq).lower()
+                for cur_record in SeqIO.parse(file_name_sample, "fastq")
+            )
         else:
-            for cur_record in SeqIO.parse(file_name_sample, "fasta"):
-                corpus.append(str(cur_record.seq).lower())
+            corpus.extend(
+                str(cur_record.seq).lower()
+                for cur_record in SeqIO.parse(file_name_sample, "fasta")
+            )
         return file_name_sample.split('/')[-1], len(corpus)
 
     @staticmethod
@@ -60,10 +68,17 @@ class FileUtility(object):
         :return: list of fasta files, and a dic to map file to index
         '''
         if len(only_files) > 0:
-            fasta_files = [x for x in FileUtility.recursive_glob(file_directory, '*.' + file_extenstion) if
-                           x.split('/')[-1] in only_files]
+            fasta_files = [
+                x
+                for x in FileUtility.recursive_glob(
+                    file_directory, f'*.{file_extenstion}'
+                )
+                if x.split('/')[-1] in only_files
+            ]
         else:
-            fasta_files = [x for x in FileUtility.recursive_glob(file_directory, '*.' + file_extenstion)]
+            fasta_files = list(
+                FileUtility.recursive_glob(file_directory, f'*.{file_extenstion}')
+            )
 
         fasta_files.sort()
         mapping = {v: k for k, v in enumerate(fasta_files)}
@@ -71,7 +86,7 @@ class FileUtility(object):
 
     @staticmethod
     def save_obj(filename, value):
-        with open(filename + '.pickle', 'wb') as f:
+        with open(f'{filename}.pickle', 'wb') as f:
             pickle.dump(value, f)
 
     @staticmethod
@@ -136,17 +151,20 @@ class FileUtility(object):
 
     @staticmethod
     def read_fasta_sequences(file_name):
-        corpus = []
-        for cur_record in SeqIO.parse(file_name, "fasta"):
-            corpus.append(str(cur_record.seq).lower())
-        return corpus
+        return [
+            str(cur_record.seq).lower()
+            for cur_record in SeqIO.parse(file_name, "fasta")
+        ]
 
     @staticmethod
     def read_fasta_sequences_ids(file_name):
-        corpus = dict()
-        for cur_record in SeqIO.parse(file_name, "fasta"):
-            corpus[str(cur_record.id)] = (str(cur_record.seq).lower(), str(cur_record.description))
-        return corpus
+        return {
+            str(cur_record.id): (
+                str(cur_record.seq).lower(),
+                str(cur_record.description),
+            )
+            for cur_record in SeqIO.parse(file_name, "fasta")
+        }
 
     @staticmethod
     def loadH5file(filename):

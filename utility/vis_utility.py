@@ -35,6 +35,6 @@ def create_mat_plot(mat, axis_names, title, filename, xlab, ylab, cmap='inferno'
     plt.yticks(rotation=ry)
     plt.rcParams.update(params)
     plt.tight_layout()
-    plt.savefig(filename + '.'+filetype, dpi=300)
+    plt.savefig(f'{filename}.{filetype}', dpi=300)
     plt.clf()
 

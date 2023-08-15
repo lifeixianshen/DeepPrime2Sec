@@ -21,8 +21,7 @@ def argsort(seq, rev=False):
 
 def sampling_from_dict(score_dict, N):
     summation=np.sum(list(score_dict.values()))
-    keys=list(score_dict.keys())
-    keys.sort()
+    keys = sorted(score_dict.keys())
     probDict={k:(s/summation) for k,s in score_dict.items()}
     prob_list=[probDict[k] for k in keys]
     return np.random.choice(keys, N, prob_list).tolist()

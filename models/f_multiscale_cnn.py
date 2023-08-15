@@ -49,11 +49,7 @@ def model_f_multiscale_cnn(n_classes, convs=[3, 5, 7], dropout_rate=0.5,
 
     gating = Dense(len(convs) * filter_size, activation='sigmoid')
 
-    # create input
-    features = []
-    for feature in features_to_use:
-        features.append(input_dict[feature])
-
+    features = [input_dict[feature] for feature in features_to_use]
     if len(features_to_use) == 1:
         conclayers = features
         input = BatchNormalization(name='batchnorm_input')(features[0])
@@ -64,12 +60,20 @@ def model_f_multiscale_cnn(n_classes, convs=[3, 5, 7], dropout_rate=0.5,
     # performing the conlvolutions
     for idx, conv in enumerate(convs):
         idx = str(idx + 1)
-        conclayers.append(Conv1D(filter_size, conv, activation="relu", padding="same", name='conv' + idx,
-                                 kernel_regularizer=regularizers.l2(cnn_regularizer))(input))
+        conclayers.append(
+            Conv1D(
+                filter_size,
+                conv,
+                activation="relu",
+                padding="same",
+                name=f'conv{idx}',
+                kernel_regularizer=regularizers.l2(cnn_regularizer),
+            )(input)
+        )
     current_multi_cnn_input = concatenate(conclayers)
 
     # Multiscale CNN application
-    for layer_idx in range(multiscalecnn_layers-1):
+    for _ in range(multiscalecnn_layers-1):
         current_multi_cnn_output = multiscale_CNN(current_multi_cnn_input, gating, filter_size, convs, cnn_regularizer)
         current_multi_cnn_input = Dropout(dropout_rate)(current_multi_cnn_output)
     dense_out = Dense(len(convs) * filter_size, activation='relu')(current_multi_cnn_input)

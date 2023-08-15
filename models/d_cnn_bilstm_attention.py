@@ -48,10 +48,7 @@ def model_d_cnn_bilstm_attention(n_classes, convs=[3, 5, 7], dense_size=200, lst
     # create input based-on selected features
     input_dict = {'pssm': pssm, 'onehot': onehot, 'embedding': embedding, 'elmo': elmo,
                   'biophysical': biophysical}
-    features = []
-    for feature in features_to_use:
-        features.append(input_dict[feature])
-
+    features = [input_dict[feature] for feature in features_to_use]
     ## batch normalization on the input features
     if len(features_to_use) == 1:
         conclayers = features
@@ -63,9 +60,18 @@ def model_d_cnn_bilstm_attention(n_classes, convs=[3, 5, 7], dense_size=200, lst
     # performing the conlvolutions
     for idx, conv in enumerate(convs):
         idx = str(idx + 1)
-        conclayers.append(BatchNormalization(name='batch_norm_conv' + idx)(
-            Conv1D(filter_size, conv, activation="relu", padding="same", name='conv' + idx,
-                   kernel_regularizer=regularizers.l2(0.001))(input)))
+        conclayers.append(
+            BatchNormalization(name=f'batch_norm_conv{idx}')(
+                Conv1D(
+                    filter_size,
+                    conv,
+                    activation="relu",
+                    padding="same",
+                    name=f'conv{idx}',
+                    kernel_regularizer=regularizers.l2(0.001),
+                )(input)
+            )
+        )
     conc = concatenate(conclayers)
 
     # Dropout and Dense Layer before LSTM

@@ -45,8 +45,18 @@ def training_loop(**kwargs):
     train_file = 'datasets/train.txt'
     test_file = 'datasets/test.txt'
     LD = LabelingData(train_file, test_file)
-    train_lengths = [int(j) for j in FileUtility.load_list('/'.join(train_file.split('/')[0:-1]) + '/train_length.txt')]
-    test_lengths = [int(i) for i in FileUtility.load_list('/'.join(test_file.split('/')[0:-1]) + '/test_length.txt')]
+    train_lengths = [
+        int(j)
+        for j in FileUtility.load_list(
+            '/'.join(train_file.split('/')[:-1]) + '/train_length.txt'
+        )
+    ]
+    test_lengths = [
+        int(i)
+        for i in FileUtility.load_list(
+            '/'.join(test_file.split('/')[:-1]) + '/test_length.txt'
+        )
+    ]
 
     # train/test batch parameters
     train_batch_size = run_parameters['train_batch_size']
@@ -66,7 +76,7 @@ def training_loop(**kwargs):
     full_path = 'results/' + run_parameters['domain_name'] + '/' + run_parameters['setting_name'] + '/' + params + '/'
 
     # save model
-    with open(full_path + 'config.txt', 'w') as fh:
+    with open(f'{full_path}config.txt', 'w') as fh:
         model.summary(print_fn=lambda x: fh.write(x + '\n'))
 
     # check points
@@ -91,7 +101,7 @@ def training_loop(**kwargs):
                             shuffle=False, epochs=epochs, verbose=1, callbacks=callbacks_list)
 
     # save the history
-    FileUtility.save_obj(full_path + 'history', h.history)
+    FileUtility.save_obj(f'{full_path}history', h.history)
 
 
     # Analysis of the performance

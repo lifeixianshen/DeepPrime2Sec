@@ -39,8 +39,6 @@ config_model_e = {'run_parameters':
                                       'dropout_rate' : 0.5, 'lr' : 0.001, 'filter_size':256,'features_to_use': ['onehot',
                                                                                               'pssm'], 'use_CRF':False}}
 
-                    #multiplicative
-
 config_model_f = {'run_parameters':
                       {'domain_name': 'baseline', 'gpu': 1, 'setting_name': 'baseline', 'train_batch_size': 64,
                        'test_batch_size': 100, 'patience': 10, 'epochs': 100},
@@ -53,8 +51,7 @@ models = ['a','b','c','d','e','f']
 
 for idx, config in enumerate([config_model_a,config_model_b, config_model_c, config_model_d, config_model_e, config_model_f]):
     c = yaml.dump(config)
-    f = open('sample_configs/model_'+models[idx]+'.yaml', 'w')
-    f.write(c)
-    f.close()
+    with open(f'sample_configs/model_{models[idx]}.yaml', 'w') as f:
+        f.write(c)
 
 
